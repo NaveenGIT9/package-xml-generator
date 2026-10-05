@@ -1,0 +1,60 @@
+<template>
+    <div style="padding:12px 16px;min-width:320px;max-width:480px;">
+
+        <!-- Error -->
+        <template if:true={errorMessage}>
+            <div style="background:#c23934;color:#fff;border-radius:4px;padding:8px 12px;font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+                <lightning-icon icon-name="utility:error" variant="inverse" size="x-small"></lightning-icon>
+                {errorMessage}
+            </div>
+        </template>
+
+        <!-- package.xml ready -->
+        <template if:true={downloadUrl}>
+            <div style="background:#2e844a;color:#fff;border-radius:4px;padding:8px 12px;font-size:13px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+                <lightning-icon icon-name="utility:success" variant="inverse" size="x-small"></lightning-icon>
+                package.xml ready —
+                <a href={downloadUrl} target="_blank" rel="noopener noreferrer" style="color:#fff;font-weight:bold;margin-left:4px;">Download</a>
+            </div>
+        </template>
+
+        <!-- destructiveChanges.xml ready -->
+        <template if:true={destructiveDownloadUrl}>
+            <div style="background:#dd7a01;color:#fff;border-radius:4px;padding:8px 12px;font-size:13px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+                <lightning-icon icon-name="utility:delete" variant="inverse" size="x-small"></lightning-icon>
+                destructiveChanges.xml ready —
+                <a href={destructiveDownloadUrl} target="_blank" rel="noopener noreferrer" style="color:#fff;font-weight:bold;margin-left:4px;">Download</a>
+            </div>
+        </template>
+
+        <!-- deployment.zip ready -->
+        <template if:true={zipDownloadUrl}>
+            <div style="background:#2e844a;color:#fff;border-radius:4px;padding:8px 12px;font-size:13px;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+                <lightning-icon icon-name="utility:success" variant="inverse" size="x-small"></lightning-icon>
+                deployment.zip ready —
+                <a href={zipDownloadUrl} target="_blank" rel="noopener noreferrer" style="color:#fff;font-weight:bold;margin-left:4px;">Download</a>
+            </div>
+        </template>
+
+        <!-- Progress bar (shown while loading) -->
+        <template if:true={isLoading}>
+            <div style="font-size:12px;color:#444;margin-bottom:6px;">{loadingMessage}</div>
+            <div style="height:4px;background:#e0e0e0;border-radius:2px;overflow:hidden;margin-bottom:12px;">
+                <div class="progress-fill"></div>
+            </div>
+        </template>
+
+        <!-- Buttons (hidden while loading) -->
+        <template if:false={isLoading}>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <lightning-button label="Generate Package.xml" icon-name="utility:download" variant="brand" onclick={handleGeneratePackageXml}></lightning-button>
+                <lightning-button label="Close" onclick={handleClose}></lightning-button>
+            </div>
+        </template>
+
+        <template if:true={isLoading}>
+            <lightning-button label="Cancel" variant="neutral" onclick={handleClose}></lightning-button>
+        </template>
+
+    </div>
+</template>

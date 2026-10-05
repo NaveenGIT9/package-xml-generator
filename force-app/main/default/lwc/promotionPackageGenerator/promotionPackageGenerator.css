@@ -1,0 +1,12 @@
+.progress-fill {
+    height: 100%;
+    width: 40%;
+    background: #2e844a;
+    border-radius: 2px;
+    animation: slide 1.4s ease-in-out infinite;
+}
+
+@keyframes slide {
+    0%   { transform: translateX(-150%); }
+    100% { transform: translateX(350%); }
+}
