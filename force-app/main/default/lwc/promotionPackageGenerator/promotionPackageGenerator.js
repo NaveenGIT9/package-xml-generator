@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { CloseActionScreenEvent } from 'lightning/actions';
 import generatePackageXml from '@salesforce/apex/PromotionPackageService.generatePackageXml';
+import getIgnoredComponents from '@salesforce/apex/PromotionPackageService.getIgnoredComponents';
 import startZipGeneration from '@salesforce/apex/PromotionPackageService.startZipGeneration';
 import checkZipStatus from '@salesforce/apex/PromotionPackageService.checkZipStatus';
 
@@ -22,6 +23,8 @@ export default class PromotionPackageGenerator extends LightningElement {
     @track downloadUrl           = '';
     @track destructiveDownloadUrl = '';
     @track zipDownloadUrl        = '';
+    @track showIgnoredPrompt     = false;
+    @track ignoredComponents     = [];
 
     _pollInterval   = null;
     _msgInterval    = null;
@@ -33,14 +36,62 @@ export default class PromotionPackageGenerator extends LightningElement {
         this.dispatchEvent(new CloseActionScreenEvent());
     }
 
+    get ignoredCount() {
+        return this.ignoredComponents.length;
+    }
+
+    get showButtons() {
+        return !this.isLoading && !this.showIgnoredPrompt;
+    }
+
     async handleGeneratePackageXml() {
         this.isLoading              = true;
         this.errorMessage           = '';
         this.downloadUrl            = '';
         this.destructiveDownloadUrl = '';
+        this.showIgnoredPrompt      = false;
+        this.ignoredComponents      = [];
+        this.loadingMessage         = 'Checking the promotion for ignored changes...';
+        try {
+            const ignored = await getIgnoredComponents({ promotionId: this.recordId });
+            if (ignored && ignored.length > 0) {
+                this.ignoredComponents = ignored.map((c) => ({
+                    key:   (c.story || '') + '|' + c.metadataType + '|' + c.name,
+                    label: c.metadataType + ': ' + c.name + (c.story ? ' (' + c.story + ')' : '')
+                }));
+                this.showIgnoredPrompt = true;
+                this.isLoading = false;
+                return;
+            }
+        } catch (err) {
+            this.errorMessage = this._extractError(err);
+            this.isLoading = false;
+            return;
+        }
+        await this._generatePackageXml(false);
+    }
+
+    handleExcludeIgnored() {
+        this.showIgnoredPrompt = false;
+        return this._generatePackageXml(true);
+    }
+
+    handleIncludeIgnored() {
+        this.showIgnoredPrompt = false;
+        return this._generatePackageXml(false);
+    }
+
+    handleCancelPrompt() {
+        this.showIgnoredPrompt = false;
+        this.ignoredComponents = [];
+    }
+
+    async _generatePackageXml(excludeIgnored) {
+        this.isLoading              = true;
+        this.errorMessage           = '';
         this.loadingMessage         = 'Reading Promotion JSON and building package.xml...';
         try {
-            const result    = await generatePackageXml({ promotionId: this.recordId });
+            const result    = await generatePackageXml({ promotionId: this.recordId, excludeIgnored });
             const base      = window.location.origin + '/sfc/servlet.shepherd/version/download/';
             const pkgCvId   = result && result.packageCvId   ? String(result.packageCvId)   : null;
             const destCvId  = result && result.destructiveCvId ? String(result.destructiveCvId) : null;

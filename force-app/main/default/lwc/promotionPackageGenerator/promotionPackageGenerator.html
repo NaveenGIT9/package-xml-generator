@@ -36,6 +36,29 @@
             </div>
         </template>
 
+        <!-- Ignored changes prompt -->
+        <template if:true={showIgnoredPrompt}>
+            <div style="background:#fef8e8;border:1px solid #dd7a01;border-radius:4px;padding:10px 12px;font-size:13px;margin-bottom:10px;">
+                <div style="font-weight:bold;margin-bottom:6px;">
+                    {ignoredCount} component(s) in this promotion are listed in Ignored changes
+                </div>
+                <div style="margin-bottom:6px;">
+                    They were removed from the promotion but are still in the Copado Promotion changes file:
+                </div>
+                <ul style="margin:0 0 8px 18px;padding:0;max-height:140px;overflow:auto;">
+                    <template for:each={ignoredComponents} for:item="c">
+                        <li key={c.key}>{c.label}</li>
+                    </template>
+                </ul>
+                <div style="margin-bottom:8px;font-weight:bold;">Exclude them from package.xml?</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <lightning-button label="Yes, exclude them" variant="brand" onclick={handleExcludeIgnored}></lightning-button>
+                    <lightning-button label="No, include them" onclick={handleIncludeIgnored}></lightning-button>
+                    <lightning-button label="Cancel" variant="neutral" onclick={handleCancelPrompt}></lightning-button>
+                </div>
+            </div>
+        </template>
+
         <!-- Progress bar (shown while loading) -->
         <template if:true={isLoading}>
             <div style="font-size:12px;color:#444;margin-bottom:6px;">{loadingMessage}</div>
@@ -45,7 +68,7 @@
         </template>
 
         <!-- Buttons (hidden while loading) -->
-        <template if:false={isLoading}>
+        <template if:true={showButtons}>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <lightning-button label="Generate Package.xml" icon-name="utility:download" variant="brand" onclick={handleGeneratePackageXml}></lightning-button>
                 <lightning-button label="Close" onclick={handleClose}></lightning-button>
